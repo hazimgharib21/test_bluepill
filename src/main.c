@@ -1,27 +1,4 @@
-
-#include "stm32f1xx.h"
-
-#define LED_1_Pin GPIO_PIN_9
-#define LED_1_GPIO_Port GPIOA
-#define LED_2_Pin GPIO_PIN_10
-#define LED_2_GPIO_Port GPIOA
-#define LED_3_Pin GPIO_PIN_11
-#define LED_3_GPIO_Port GPIOA
-#define LED_4_Pin GPIO_PIN_12
-#define LED_4_GPIO_Port GPIOA
-#define LED_5_Pin GPIO_PIN_5
-#define LED_5_GPIO_Port GPIOB
-#define LED_6_Pin GPIO_PIN_6
-#define LED_6_GPIO_Port GPIOB
-#define LED_7_Pin GPIO_PIN_7
-#define LED_7_GPIO_Port GPIOB
-#define LED_8_Pin GPIO_PIN_8
-#define LED_8_GPIO_Port GPIOB
-#define LED_9_Pin GPIO_PIN_9
-#define LED_9_GPIO_Port GPIOB
-
-void SystemClock_Config(void);
-void GPIO_Init(void);
+#include "main.h"
 
 int main(void)
 {
@@ -29,18 +6,55 @@ int main(void)
 	SystemClock_Config();
 	GPIO_Init();
 
-	while (1) {
-	  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-	  HAL_GPIO_TogglePin(LED_1_GPIO_Port, LED_1_Pin);
-	  HAL_GPIO_TogglePin(LED_2_GPIO_Port, LED_2_Pin);
-	  HAL_GPIO_TogglePin(LED_3_GPIO_Port, LED_3_Pin);
-	  HAL_GPIO_TogglePin(LED_4_GPIO_Port, LED_4_Pin);
-	  HAL_GPIO_TogglePin(LED_5_GPIO_Port, LED_5_Pin);
-	  HAL_GPIO_TogglePin(LED_6_GPIO_Port, LED_6_Pin);
-	  HAL_GPIO_TogglePin(LED_7_GPIO_Port, LED_7_Pin);
-	  HAL_GPIO_TogglePin(LED_8_GPIO_Port, LED_8_Pin);
-	  HAL_GPIO_TogglePin(LED_9_GPIO_Port, LED_9_Pin);
-	  HAL_Delay(500);
+	uint32_t previousTick = 0;
+	uint32_t blinkInterval = 1000;
+
+
+	while (1)
+	{
+	  uint32_t currentTick = HAL_GetTick();
+
+	  if((currentTick - previousTick) > blinkInterval)
+	  {
+		  previousTick = currentTick;
+		  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+	  }
+
+	  if(HAL_GPIO_ReadPin(Button_1_GPIO_Port, Button_1_Pin))
+	  {
+		  HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
+	  }
+	  else
+	  {
+		  HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
+	  }
+
+	  if(HAL_GPIO_ReadPin(Button_2_GPIO_Port, Button_2_Pin))
+	  {
+		  HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
+	  }
+	  else
+	  {
+		  HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
+	  }
+
+	  if(HAL_GPIO_ReadPin(Button_3_GPIO_Port, Button_3_Pin))
+	  {
+		  HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_SET);
+	  }
+	  else
+	  {
+		  HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_RESET);
+	  }
+
+	  if(HAL_GPIO_ReadPin(Button_4_GPIO_Port, Button_4_Pin))
+	  {
+		  HAL_GPIO_WritePin(LED_4_GPIO_Port, LED_4_Pin, GPIO_PIN_SET);
+	  }
+	  else
+	  {
+		  HAL_GPIO_WritePin(LED_4_GPIO_Port, LED_4_Pin, GPIO_PIN_RESET);
+	  }
 	}
 
 }
@@ -79,41 +93,44 @@ void GPIO_Init(void)
 {  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
 	/* GPIO Ports Clock Enable */
-	__HAL_RCC_GPIOC_CLK_ENABLE();
-	__HAL_RCC_GPIOD_CLK_ENABLE();
 	__HAL_RCC_GPIOA_CLK_ENABLE();
 	__HAL_RCC_GPIOB_CLK_ENABLE();
+	__HAL_RCC_GPIOC_CLK_ENABLE();
+	__HAL_RCC_GPIOD_CLK_ENABLE();
 
-	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-
-	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOA, LED_1_Pin|LED_2_Pin|LED_3_Pin|LED_4_Pin, GPIO_PIN_RESET);
 
-	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOB, LED_5_Pin|LED_6_Pin|LED_7_Pin|LED_8_Pin
                         |LED_9_Pin, GPIO_PIN_RESET);
 
-	/*Configure GPIO pin : PC13 */
-	GPIO_InitStruct.Pin = GPIO_PIN_13;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_PULLUP;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
-	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
-	/*Configure GPIO pins : LED_1_Pin LED_2_Pin LED_3_Pin LED_4_Pin */
+	// Configure Output Pin for Port A
 	GPIO_InitStruct.Pin = LED_1_Pin|LED_2_Pin|LED_3_Pin|LED_4_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_PULLUP;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-	/*Configure GPIO pins : LED_5_Pin LED_6_Pin LED_7_Pin LED_9_Pin
-                         LED_10_Pin */
+	// Configure Input Pin for Port B
+	GPIO_InitStruct.Pin = Button_1_Pin|Button_2_Pin|Button_3_Pin|Button_4_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+	// Configure Output Pin for Port B
 	GPIO_InitStruct.Pin = LED_5_Pin|LED_6_Pin|LED_7_Pin|LED_8_Pin
                         |LED_9_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_PULLUP;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+	// Configure Output Pin for Port C
+	GPIO_InitStruct.Pin = GPIO_PIN_13;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
+	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
 }
